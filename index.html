@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sweep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,650&family=Public+Sans:wght@400;500;600&display=swap">
+<script>document.documentElement.dataset.theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";</script>
+<style>
+/* Hallmark · genre: editorial · macrostructure: Index-First · theme: custom (vibe: "broadsheet ledger, vermilion pencil")
+ * paper oklch(97% 0.012 85) · accent oklch(56% 0.19 33) vermilion · Newsreader + Public Sans
+ * axes: light / roman-serif / warm · enrichment: none · nav: N9 edge-aligned · footer: action bar
+ * pre-emit critique: P4 H5 E4 S5 R5 V4
+ */
+:root {
+  --color-paper: oklch(97% 0.012 85);
+  --color-paper-2: oklch(93.5% 0.016 85);
+  --color-ink: oklch(23% 0.018 60);
+  --color-ink-2: oklch(47% 0.014 60);
+  --color-rule: oklch(84% 0.014 80);
+  --color-accent: oklch(56% 0.19 33);
+  --color-accent-ink: oklch(98% 0.01 85);
+  --color-ok: oklch(50% 0.12 150);
+  --color-warn: oklch(55% 0.12 70);
+  --color-focus: oklch(56% 0.19 33);
+  --font-display: "Newsreader", Georgia, serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --text-xs: 0.75rem; --text-sm: 0.8125rem; --text-md: 0.9375rem; --text-lg: 1.125rem;
+  --text-xl: 1.75rem; --text-display: 2.75rem;
+  --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px;
+  --radius-sm: 3px;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 140ms;
+}
+:root[data-theme=dark] {
+    color-scheme: dark;
+    --color-paper: oklch(19% 0.012 60);
+    --color-paper-2: oklch(23% 0.014 60);
+    --color-ink: oklch(93% 0.012 85);
+    --color-ink-2: oklch(72% 0.012 80);
+    --color-rule: oklch(33% 0.012 60);
+    --color-accent: oklch(68% 0.17 35);
+    --color-accent-ink: oklch(18% 0.012 60);
+    --color-ok: oklch(74% 0.13 150);
+    --color-warn: oklch(78% 0.12 75);
+    --color-focus: oklch(72% 0.16 35);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow-x: clip; }
+body {
+  background: var(--color-paper); color: var(--color-ink);
+  font: 400 var(--text-md)/1.5 var(--font-body);
+  display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto;
+}
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+button, input, select { font: inherit; color: inherit; }
+
+/* ---- rail ---- */
+aside { grid-row: 1 / 3; border-right: 1px solid var(--color-rule); padding: var(--space-xl) var(--space-lg); overflow-y: auto; }
+.wordmark { font: 650 var(--text-display)/1 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+.dek { color: var(--color-ink-2); margin: var(--space-xs) 0 var(--space-xl); max-width: 24ch; }
+h2 { font: 600 var(--text-xs)/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-2); margin: var(--space-xl) 0 var(--space-sm); }
+.accounts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--color-rule); }
+.accounts li { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-rule); }
+.accounts .addr { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.accounts .prov { font-size: var(--text-xs); color: var(--color-ink-2); }
+.link-btn { background: none; border: 0; padding: var(--space-2xs) 0; color: var(--color-ink-2); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.link-btn:hover { color: var(--color-accent); }
+details { margin-top: var(--space-sm); }
+summary { cursor: pointer; font-weight: 600; padding: var(--space-2xs) 0; }
+summary:hover { color: var(--color-accent); }
+form { display: grid; gap: var(--space-sm); margin-top: var(--space-md); }
+label { display: grid; gap: var(--space-2xs); font-size: var(--text-sm); font-weight: 500; }
+input[type=email], input[type=password], input[type=search], select {
+  width: 100%; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-rule); border-radius: var(--radius-sm);
+  background: var(--color-paper);
+}
+input:hover, select:hover { border-color: var(--color-ink-2); }
+.hint { font-size: var(--text-sm); color: var(--color-ink-2); margin: 0; }
+.hint a { color: inherit; }
+.error { color: var(--color-accent); font-size: var(--text-sm); margin: 0; }
+.error:empty { display: none; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs); white-space: nowrap;
+  padding: var(--space-xs) var(--space-md); border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px solid var(--color-ink); background: var(--color-ink); color: var(--color-paper); font-weight: 600;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover { opacity: 0.86; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn.ghost { background: transparent; color: var(--color-ink); }
+.btn.danger { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink); }
+
+.switch { display: flex; align-items: center; gap: var(--space-sm); background: none; border: 0; padding: var(--space-2xs) 0; margin-bottom: var(--space-md); cursor: pointer; font-size: var(--text-sm); color: var(--color-ink-2); }
+.switch:hover { color: var(--color-ink); }
+.track { position: relative; width: 36px; height: 20px; border-radius: 10px; background: var(--color-rule); transition: background var(--dur-fast) var(--ease-out); }
+.track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-paper); transition: transform var(--dur-fast) var(--ease-out); }
+.switch[aria-checked=true] .track { background: var(--color-accent); }
+.switch[aria-checked=true] .track::after { transform: translateX(16px); }
+.lookback { border: 0; padding: 0; margin: 0 0 var(--space-md); display: flex; gap: 0; }
+.lookback legend { font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-2xs); }
+.lookback label { display: block; }
+.lookback input { position: absolute; opacity: 0; }
+.lookback label { flex: 1; }
+.lookback span { display: block; text-align: center; white-space: nowrap; font-size: var(--text-sm); padding: var(--space-2xs) 0; border: 1px solid var(--color-rule); margin-left: -1px; cursor: pointer; font-weight: 400; }
+.lookback label:first-of-type span { border-radius: var(--radius-sm) 0 0 var(--radius-sm); margin-left: 0; }
+.lookback label:last-of-type span { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.lookback input:checked + span { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+.lookback input:focus-visible + span { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.progress { font-size: var(--text-sm); color: var(--color-ink-2); min-height: 3em; margin: var(--space-sm) 0 0; font-variant-numeric: tabular-nums; }
+
+/* ---- index ---- */
+main { overflow-y: auto; padding: var(--space-xl) var(--space-xl) var(--space-lg); }
+.summary { font: 500 var(--text-xl)/1.2 var(--font-display); margin: 0 0 var(--space-lg); max-width: 40ch; font-variant-numeric: tabular-nums; }
+.summary b { font-weight: 650; }
+.tools { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; margin-bottom: var(--space-sm); }
+.tools input[type=search] { max-width: 240px; }
+.tools select { width: auto; }
+.check { display: inline-flex; align-items: center; gap: var(--space-xs); font-weight: 400; font-size: var(--text-sm); cursor: pointer; grid-auto-flow: column; }
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--color-accent); margin: 0; cursor: pointer; }
+
+.list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--color-ink); }
+.row {
+  display: grid; grid-template-columns: 28px 4.5rem minmax(0, 1fr) 11rem; gap: var(--space-md); align-items: baseline;
+  padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-rule); cursor: pointer;
+}
+.row:hover { background: var(--color-paper-2); }
+.row input { align-self: center; }
+.count { font: 500 var(--text-xl)/1 var(--font-display); text-align: right; font-variant-numeric: tabular-nums lining-nums; }
+.who { min-width: 0; }
+.name, .meta, .method { display: block; }
+.name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { font-size: var(--text-sm); color: var(--color-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.how { font-size: var(--text-sm); color: var(--color-ink-2); text-align: right; }
+.status { display: block; font-weight: 600; }
+.status[data-s=done] { color: var(--color-ok); }
+.status[data-s=browser] { color: var(--color-warn); }
+.status[data-s=failed] { color: var(--color-accent); }
+.status[data-s=working] { color: var(--color-ink-2); font-weight: 400; }
+.row.handled .name, .row.handled .count, .row.ignored .name, .row.ignored .count { color: var(--color-ink-2); }
+.cat { display: block; font-weight: 600; color: var(--color-ink); }
+.how .link-btn { font-size: var(--text-sm); }
+.empty { color: var(--color-ink-2); max-width: 46ch; padding: var(--space-xl) 0; }
+
+/* ---- action bar ---- */
+footer {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+  padding: var(--space-sm) var(--space-xl); border-top: 1px solid var(--color-rule); background: var(--color-paper-2);
+}
+footer p { margin: 0; font-size: var(--text-sm); color: var(--color-ink-2); }
+
+@media (max-width: 900px) {
+  body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) auto; }
+  aside { grid-row: auto; border-right: 0; border-bottom: 1px solid var(--color-rule); }
+  .row { grid-template-columns: 28px 3.5rem minmax(0, 1fr); }
+  .row { row-gap: var(--space-2xs); }
+  .how { grid-column: 3; text-align: left; }
+  main, footer { padding-left: var(--space-md); padding-right: var(--space-md); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<aside>
+  <h1 class="wordmark">Sweep</h1>
+  <p class="dek">Newsletters in your inbox, and the way out of each one.</p>
+  <button class="switch" id="theme" role="switch" aria-checked="false" type="button"><span class="track"></span>Dark mode</button>
+
+  <h2 id="acc-h">Accounts</h2>
+  <ul class="accounts" id="accounts" aria-labelledby="acc-h"></ul>
+
+  <details id="add-box" open>
+  <summary>Add an account</summary>
+  <form id="add" autocomplete="off">
+    <label>Email address <input type="email" id="f-email" required placeholder="name@gmail.com"></label>
+    <label>Provider
+      <select id="f-provider" required>
+        <option value="gmail">Gmail</option>
+        <option value="libero">Libero Mail</option>
+      </select>
+    </label>
+    <label><span id="pw-label">App Password</span> <input type="password" id="f-password" required></label>
+    <p class="hint" id="pw-hint"></p>
+    <p class="error" id="add-error" role="alert"></p>
+    <button class="btn ghost" id="add-btn">Add account</button>
+  </form>
+  </details>
+
+  <h2>Scan</h2>
+  <fieldset class="lookback">
+    <legend>Look back over</legend>
+    <label><input type="radio" name="days" value="30"><span>30 days</span></label>
+    <label><input type="radio" name="days" value="90" checked><span>90 days</span></label>
+    <label><input type="radio" name="days" value="365"><span>1 year</span></label>
+    <label><input type="radio" name="days" value="0"><span>All</span></label>
+  </fieldset>
+  <button class="btn" id="scan-btn" disabled>Scan inboxes</button>
+  <p class="progress" id="progress" aria-live="polite"></p>
+</aside>
+
+<main>
+  <p class="summary" id="summary">Add a Gmail or Libero account, then scan. Sweep reads every folder, including Spam and Trash, and never deletes or changes anything.</p>
+  <div class="tools" id="tools" hidden>
+    <label class="check"><input type="checkbox" id="all"> Select all shown</label>
+    <input type="search" id="filter" placeholder="Filter by name or address" aria-label="Filter senders">
+    <select id="f-account" aria-label="Show account"></select>
+    <select id="f-cat" aria-label="Show category"></select>
+    <select id="sort" aria-label="Sort senders"><option value="">Category first</option><option value="count">Most emails first</option><option value="recent">Most recent first</option></select>
+    <label class="check"><input type="checkbox" id="hide-handled" checked> Hide handled</label>
+    <label class="check"><input type="checkbox" id="show-ignored"> Show ignored</label>
+  </div>
+  <ul class="list" id="list" aria-label="Newsletter senders"></ul>
+</main>
+
+<footer>
+  <p id="sel-count" aria-live="polite">Nothing selected</p>
+  <button class="btn danger" id="unsub-btn" disabled>Unsubscribe</button>
+</footer>
+
+<template id="row-t">
+  <li class="row">
+    <input type="checkbox" aria-label="">
+    <span class="count"></span>
+    <span class="who"><span class="name"></span><span class="meta"></span></span>
+    <span class="how"><span class="status"></span><span class="cat"></span><span class="method"></span><button class="link-btn" type="button"></button></span>
+  </li>
+</template>
+
+<script>
+const $ = id => document.getElementById(id);
+const METHOD = { "one-click": "One click", mailto: "Sends an email", link: "Opens the website", body: "Opens the link in the email" };
+// Gmail tab names, with Libero's own name after the slash where it differs
+const CAT = { promotions: "Promotions / Offerte", newsletter: "Newsletter", social: "Social", forums: "Forums", updates: "Updates",
+  orders: "Orders / Ordini", bookings: "Bookings / Prenotazioni", utilities: "Bills / Utenze", primary: "Primary / Principale" };
+const STATUS = { done: "Unsubscribed", browser: "Finish on the website", failed: "Failed", working: "Working…" };
+const HINT = {
+  gmail: 'Gmail needs an App Password, not your usual one. Turn on 2-Step Verification, then <a href="https://myaccount.google.com/apppasswords" target="_blank">create an App Password</a>.',
+  libero: 'Use your Libero Mail password. If the login is refused, check in Libero’s settings that access from email programs (IMAP) is allowed.',
+};
+let api, senders = [], accounts = [], selected = new Set(), confirmArmed = false, lastDays = "90";
+const fmt = n => n.toLocaleString("en-GB");
+const shortFolder = f => (f || "").replace(/^\[Gmail\]\//, "");
+const esc = t => t.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`);
+const day = iso => iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "date unknown";
+
+window.onProgress = p => {
+  $("progress").textContent = `Reading ${p.account} › ${shortFolder(p.folder)}: ${fmt(p.done)} of ${fmt(p.total)} messages`;
+};
+
+function setProvider(p) {
+  $("f-provider").value = p;
+  $("pw-label").textContent = p === "gmail" ? "App Password" : "Password";
+  $("pw-hint").innerHTML = HINT[p];
+}
+
+function renderAccounts(list) {
+  accounts = list;
+  const ul = $("accounts");
+  ul.replaceChildren(...accounts.map(a => {
+    const li = document.createElement("li");
+    const addr = Object.assign(document.createElement("span"), { className: "addr", textContent: a.email, title: a.email });
+    const prov = Object.assign(document.createElement("span"), { className: "prov", textContent: a.provider === "gmail" ? "Gmail" : "Libero" });
+    const rm = Object.assign(document.createElement("button"), { className: "link-btn", textContent: "Remove", type: "button" });
+    rm.setAttribute("aria-label", `Remove ${a.email}`);
+    rm.onclick = async () => { renderAccounts(await api.remove_account(a.email)); fillAccountFilter(); if (senders.length) renderList(); };
+    li.append(addr, prov, rm);
+    return li;
+  }));
+  $("scan-btn").disabled = !accounts.length;
+  $("add-box").open = !accounts.length;
+}
+
+function visible() {
+  const q = $("filter").value.trim().toLowerCase(), hide = $("hide-handled").checked;
+  const acct = $("f-account").value, cat = $("f-cat").value, ign = $("show-ignored").checked;
+  const rows = senders.filter(s => (!hide || !s.prior) && (ign || !s.ignored) &&
+    (!acct || s.account === acct) && (!cat || s.category === cat) &&
+    (!q || s.name.toLowerCase().includes(q) || s.address.includes(q)));
+  const by = $("sort").value;  // "" keeps the scan's order: category, then most emails
+  return by === "recent" ? rows.sort((a, b) => b.last.localeCompare(a.last))
+    : by === "count" ? rows.sort((a, b) => b.count - a.count) : rows;
+}
+
+// Only rows on screen are acted on: picks hidden by a filter (another account, say) stay out of the count.
+const chosen = () => { const shown = new Set(visible().map(s => s.key)); return [...selected].filter(k => shown.has(k)); };
+
+function renderList() {
+  const rows = visible(), t = $("row-t").content;
+  $("list").replaceChildren(...rows.map(s => {
+    const li = t.cloneNode(true).firstElementChild;
+    const cb = li.querySelector("input");
+    cb.checked = selected.has(s.key);
+    cb.setAttribute("aria-label", `Select ${s.name}`);
+    cb.disabled = s.handled === "done" || s.ignored;
+    cb.onchange = () => { cb.checked ? selected.add(s.key) : selected.delete(s.key); updateBar(); };
+    li.onclick = e => { if (e.target !== cb && !cb.disabled) { cb.checked = !cb.checked; cb.onchange(); } };
+    li.querySelector(".count").textContent = fmt(s.count);
+    li.querySelector(".name").textContent = s.name;
+    const where = s.folder && !/^(INBOX|\[Gmail\]\/(All Mail|Tutti i messaggi))$/i.test(s.folder) ? ` · in ${shortFolder(s.folder)}` : "";
+    li.querySelector(".meta").textContent = `${s.address} · ${s.account}${where} · latest ${day(s.last)} · ${s.subject}`;
+    li.querySelector(".method").textContent = METHOD[s.method];
+    li.querySelector(".cat").textContent = CAT[s.category] || "";
+    const ig = li.querySelector(".link-btn");
+    ig.textContent = s.ignored ? "Restore" : "Ignore";
+    ig.setAttribute("aria-label", `${s.ignored ? "Restore" : "Ignore"} ${s.name}`);
+    ig.onclick = e => { e.stopPropagation(); setIgnored(s, !s.ignored); };
+    li.classList.toggle("ignored", s.ignored);
+    const st = li.querySelector(".status");
+    if (s.handled) { st.dataset.s = s.handled; st.textContent = STATUS[s.handled] + (s.detail ? `: ${s.detail}` : ""); }
+    li.classList.toggle("handled", s.handled === "done" || s.handled === "browser");
+    li.dataset.key = s.key;
+    return li;
+  }));
+  renderSummary(rows);
+  if (!rows.length && senders.length) $("list").innerHTML = '<li class="empty">Nothing matches. Clear the filter or untick “Hide handled”.</li>';
+  $("all").checked = rows.length > 0 && rows.every(s => selected.has(s.key) || s.handled === "done");
+}
+
+function renderSummary(rows) {
+  const period = { "0": "across all your mail", "365": "in the last year" }[lastDays] || `in the last ${lastDays} days`;
+  const msgs = rows.reduce((a, s) => a + s.count, 0);
+  const who = $("f-account").value ? ` to ${$("f-account").value}` : "";
+  $("summary").innerHTML = rows.length
+    ? `<b>${fmt(rows.length)}</b> sender${rows.length > 1 ? "s" : ""} sent <b>${fmt(msgs)}</b> newsletters${esc(who)} ${period}.`
+    : `No newsletters ${senders.length ? "match these filters" : "found"} ${period}.`;
+}
+
+function setIgnored(s, on) {
+  s.ignored = on;
+  if (on) selected.delete(s.key);
+  api.ignore(s.key, on);
+  renderList(); updateBar();
+}
+
+function fillAccountFilter() {
+  const sel = $("f-account"), keep = sel.value;
+  sel.replaceChildren(new Option("All accounts", ""), ...accounts.map(a => new Option(a.email, a.email)));
+  sel.value = accounts.some(a => a.email === keep) ? keep : "";
+  sel.hidden = accounts.length < 2;
+  const cat = $("f-cat"), keepCat = cat.value, present = new Set(senders.map(s => s.category));
+  cat.replaceChildren(new Option("All categories", ""), ...Object.keys(CAT).filter(c => present.has(c)).map(c => new Option(CAT[c], c)));
+  cat.value = present.has(keepCat) ? keepCat : "";
+  cat.hidden = present.size < 2;
+}
+
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $("theme").setAttribute("aria-checked", String(t === "dark"));
+}
+
+function updateBar() {
+  confirmArmed = false;
+  const n = chosen().length, b = $("unsub-btn");
+  $("sel-count").textContent = n ? `${n} sender${n > 1 ? "s" : ""} selected` : "Nothing selected";
+  b.textContent = n ? `Unsubscribe from ${n}` : "Unsubscribe";
+  b.disabled = !n;
+}
+
+$("f-email").addEventListener("change", async e => { const p = await api.guess_provider(e.target.value); if (p) setProvider(p); });
+$("f-provider").addEventListener("change", e => setProvider(e.target.value));
+
+$("add").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("add-btn");
+  btn.disabled = true; btn.textContent = "Checking login…"; $("add-error").textContent = "";
+  const r = await api.add_account($("f-email").value, $("f-password").value, $("f-provider").value);
+  btn.disabled = false; btn.textContent = "Add account";
+  if (r.error) { $("add-error").textContent = r.error; return; }
+  $("add").reset(); setProvider("gmail"); renderAccounts(r.accounts);
+});
+
+$("scan-btn").addEventListener("click", async () => {
+  const btn = $("scan-btn"), days = document.querySelector("input[name=days]:checked").value;
+  btn.disabled = true; btn.textContent = "Scanning…"; $("progress").textContent = "Connecting…";
+  const r = await api.scan(days);
+  btn.disabled = false; btn.textContent = "Scan again";
+  senders = r.senders.map(s => ({ ...s, prior: s.handled === "done" || s.handled === "browser" })); selected.clear();
+  lastDays = days; fillAccountFilter();
+  $("progress").textContent = r.errors.length ? "Problems: " + r.errors.join(" · ") : "Scan finished.";
+  $("tools").hidden = !senders.length;
+  renderList(); updateBar();
+});
+
+$("filter").addEventListener("input", () => { renderList(); updateBar(); });
+for (const id of ["hide-handled", "show-ignored", "f-account", "f-cat", "sort"]) $(id).addEventListener("change", () => { renderList(); updateBar(); });
+$("theme").addEventListener("click", () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(t); api.set_theme(t);
+});
+$("all").addEventListener("change", e => {
+  visible().forEach(s => s.handled !== "done" && (e.target.checked ? selected.add(s.key) : selected.delete(s.key)));
+  renderList(); updateBar();
+});
+
+$("unsub-btn").addEventListener("click", async () => {
+  const b = $("unsub-btn");
+  if (!confirmArmed) { confirmArmed = true; b.textContent = `Confirm: unsubscribe from ${chosen().length}`; return; }
+  b.disabled = true;
+  const keys = chosen(), byKey = Object.fromEntries(senders.map(s => [s.key, s]));
+  for (const [i, key] of keys.entries()) {
+    byKey[key].handled = "working"; renderList();
+    $("sel-count").textContent = `Working on ${i + 1} of ${keys.length}…`;
+    const r = await api.unsubscribe(key);
+    Object.assign(byKey[key], { handled: r.status, detail: r.detail });
+    selected.delete(key);  // failed rows too: pick them again to retry
+    renderList();
+  }
+  const done = keys.filter(k => byKey[k].handled === "done").length, web = keys.filter(k => byKey[k].handled === "browser").length;
+  updateBar();
+  $("sel-count").textContent = `${done} unsubscribed` + (web ? ` · ${web} opened in your browser to finish` : "") + (keys.length - done - web ? ` · ${keys.length - done - web} failed` : "");
+});
+
+window.addEventListener("pywebviewready", async () => {
+  api = window.pywebview.api;
+  setProvider("gmail");
+  const st = await api.get_settings();
+  applyTheme(st.theme || document.documentElement.dataset.theme);
+  renderAccounts(st.accounts);
+});
+</script>
+</body>
+</html>
