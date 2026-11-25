@@ -62,12 +62,8 @@ Run the self-check with `python test_sweep.py` (prints `ok`).
 
 ## Outlook sign-in (for builders)
 
-Outlook needs an app registered with Microsoft. Once, in the [Microsoft Entra admin center](https://entra.microsoft.com) → App registrations → New registration:
-
-1. Supported account types: **Personal Microsoft accounts only**.
-2. Redirect URI: platform **Public client/native (mobile & desktop)**, `http://localhost`.
-3. Nothing to add under API permissions: Sweep asks for `IMAP.AccessAsUser.All` and `SMTP.Send` at sign-in (dynamic consent). To list them anyway: Microsoft Graph → Delegated → `IMAP.AccessAsUser.All`, `SMTP.Send`.
-4. Copy the *Application (client) ID* into `MS_CLIENT_ID` in `app.py` (or set the `SWEEP_MS_CLIENT_ID` environment variable when running from source).
+Outlook needs an app registered with Microsoft Entra, once, and its client ID in `MS_CLIENT_ID` in `app.py`
+(or the `SWEEP_MS_CLIENT_ID` environment variable when running from source). Step-by-step guide: [docs/outlook-setup.md](docs/outlook-setup.md).
 
 Without it, every other provider works and Outlook shows an error when added.
 
